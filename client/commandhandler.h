@@ -9,8 +9,11 @@
 #include <chrono>
 #include <thread>
 #include <condition_variable>
+#include <random>
+#include "logger.h"
 #include "message.h"
 #include "abstractclient.h"
+#include <../data_model/data_model.pb.h>
 
 enum RequestType
 {
@@ -34,6 +37,7 @@ public:
     CommandHandler(AbstractClient* client) : client_(client){}
     virtual ~CommandHandler(){}
 
+    // return code: 1 - appropriate handler, 0 - not appropriate handler, -1 - appropiate handler, but incorrect request
     virtual int handle(const std::vector<std::string>& parameters) = 0;
 };
 
@@ -45,6 +49,9 @@ public:
     ~SETHandler(){}
 
     virtual int handle(const std::vector<std::string>& parameters) override;
+
+private:
+    void log(const tutorial::Request& request);
 };
 
 // GET <VARIABLE>
@@ -69,6 +76,7 @@ class SETRTHandler : public SETHandler
 public:
     SETRTHandler(AbstractClient* client) : SETHandler(client) {
         infinite_tread = std::thread(&SETRTHandler::infinite_loop, this);
+        srand(time(0));
     }
     ~SETRTHandler() {
         {

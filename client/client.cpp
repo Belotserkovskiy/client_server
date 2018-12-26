@@ -15,8 +15,8 @@ static std::vector<std::string> split_string(std::string& str)
 
 void Client::start(){
     tcp::resolver resolver(io_service_);
-    auto endpoint_iterator = resolver.resolve({ address_, port_ });
-    do_connect(endpoint_iterator);
+    endpoint_iterator = resolver.resolve({ address_, port_ });
+    do_connect();
 
     boost::asio::io_service& io_ref = io_service_;
     io_service_tread = std::thread([&io_ref](){ io_ref.run(); });
@@ -30,8 +30,14 @@ void Client::start(){
             continue;
         }
 
-        for (auto& handler : request_handlers)
-            handler->handle(tokens);
+        int handler_finded = 0;
+        for (auto& handler : request_handlers) {
+            handler_finded = handler->handle(tokens);
+            if (handler_finded)
+                break;
+        }
+        if (!handler_finded)
+            std::cout << "There are no appropriate handlers for this request\n";
     }
     stop();
 }
@@ -61,7 +67,7 @@ void Client::close_socket()
     io_service_.post([this]() { socket_.close(); });
 }
 
-void Client::do_connect(tcp::resolver::iterator endpoint_iterator)
+void Client::do_connect()
 {
     boost::asio::async_connect(socket_, endpoint_iterator,
                                [this](boost::system::error_code ec, tcp::resolver::iterator)
@@ -86,6 +92,7 @@ void Client::do_read_header()
         else
         {
             socket_.close();
+            do_connect();
         }
     });
 }
@@ -105,6 +112,7 @@ void Client::do_read_body()
         else
         {
             socket_.close();
+            do_connect();
         }
     });
 }
@@ -127,6 +135,7 @@ void Client::do_write()
         else
         {
             socket_.close();
+            do_connect();
         }
     });
 }

@@ -17,20 +17,22 @@ DEFINES += QT_DEPRECATED_WARNINGS
 SOURCES += \
         main.cpp \
     client.cpp \
-    commandhandler.cpp
+    commandhandler.cpp \
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
-INCLUDEPATH += ../server \
+INCLUDEPATH += ../server2 \
+                ../utility \
 
 HEADERS += \
     message.h \
     client.h \
     commandhandler.h \
-    abstractclient.h
+    abstractclient.h \
 
 
-LIBS += -lboost_system
+LIBS += -lboost_system -L../data_model -ldata_model -lprotobuf \
+        -lboost_log -lboost_thread -lboost_log_setup -L../utility -llogger

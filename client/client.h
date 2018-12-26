@@ -16,7 +16,7 @@
 
 using boost::asio::ip::tcp;
 
-typedef std::deque<Message> chat_message_queue;
+typedef std::deque<Message> message_queue;
 
 class Client : public AbstractClient
 {
@@ -37,7 +37,7 @@ public:
   void write(const Message& msg) override;
 
 private:
-  void do_connect(tcp::resolver::iterator endpoint_iterator);
+  void do_connect();
 
   void do_read_header();
 
@@ -57,8 +57,9 @@ private:
   std::thread io_service_tread;
   tcp::socket socket_;
   Message read_msg_;
-  chat_message_queue write_msgs_;
+  message_queue write_msgs_;
   std::list<std::shared_ptr<CommandHandler>> request_handlers;
+  tcp::resolver::iterator endpoint_iterator;
 
 };
 
